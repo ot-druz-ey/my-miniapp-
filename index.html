@@ -15,17 +15,10 @@
       padding: 20px;
       margin: 0;
     }
-    h1 {
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-    p {
-      color: #8e8e93;
-      font-size: 14px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    input {
+    h1 { font-size: 20px; margin-bottom: 8px; }
+    p { color: #8e8e93; font-size: 14px; margin-bottom: 16px; text-align: center; }
+    
+    input, select {
       width: 90%;
       max-width: 320px;
       padding: 12px;
@@ -37,6 +30,7 @@
       margin-bottom: 12px;
       box-sizing: border-box;
     }
+    
     button {
       width: 90%;
       max-width: 320px;
@@ -49,9 +43,8 @@
       font-weight: bold;
       cursor: pointer;
     }
-    button:disabled {
-      opacity: 0.5;
-    }
+    button:disabled { opacity: 0.5; }
+
     .result {
       margin-top: 20px;
       width: 90%;
@@ -71,7 +64,13 @@
   <h1>AI Генератор Аватарок</h1>
   <p>Опиши картинку на английском</p>
 
-  <input type="text" id="prompt" placeholder="cool neon cat...">
+  <input type="text" id="prompt" placeholder="cool blue banana, HD, detailed...">
+  
+  <select id="modelSelect">
+    <option value="flux">Модель: Flux (Высокая детализация)</option>
+    <option value="turbo">Модель: Turbo (Быстрая генерация)</option>
+  </select>
+
   <button id="btn" onclick="generate()">Сгенерировать</button>
 
   <div class="result">
@@ -81,6 +80,7 @@
   <script>
     function generate() {
       const input = document.getElementById('prompt');
+      const modelSelect = document.getElementById('modelSelect');
       const btn = document.getElementById('btn');
       const img = document.getElementById('resImg');
       
@@ -88,13 +88,12 @@
       if (!text) return;
 
       btn.disabled = true;
-      btn.innerText = 'Генерирую...';
+      btn.innerText = 'Рисую арт...';
 
-      // Генерируем уникальный seed и timestamp для отмены кэширования
       const seed = Math.floor(Math.random() * 9999999);
-      const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(text) + '?seed=' + seed + '&t=' + Date.now();
+      const model = modelSelect.value;
+      const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(text) + '?seed=' + seed + '&model=' + model + '&nologo=true&t=' + Date.now();
 
-      // Загружаем новую картинку в память перед показoм
       const tempImg = new Image();
       tempImg.src = url;
 
@@ -106,7 +105,7 @@
       };
 
       tempImg.onerror = () => {
-        alert('Сервер перегружен, попробуй ещё раз!');
+        alert('Сервер временно не отвечает, попробуй выбрать модель Turbo или повторить через пару секунд!');
         btn.disabled = false;
         btn.innerText = 'Сгенерировать';
       };
