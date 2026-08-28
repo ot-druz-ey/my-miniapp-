@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DALL-E 3 Генератор</title>
+  <title>Генератор Картинок</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
@@ -61,20 +61,18 @@
 </head>
 <body>
 
-  <h1>DALL-E 3 Генератор</h1>
+  <h1>Генератор Картинок</h1>
   <p>Опиши картинку на любом языке</p>
 
   <input type="text" id="prompt" placeholder="например: дубайский шоколад...">
   <button id="btn" onclick="generate()">Сгенерировать</button>
 
   <div class="result">
-    <img id="resImg" alt="Result">
+    <img id="resImg" alt="Result" onload="imageLoaded()" onerror="imageError()">
   </div>
 
   <script>
-    const OPENAI_API_KEY = "sk-proj-7g0n4cdUUTsIr_rhV693k";
-
-    async function generate() {
+    function generate() {
       const input = document.getElementById('prompt');
       const btn = document.getElementById('btn');
       const img = document.getElementById('resImg');
@@ -83,45 +81,32 @@
       if (!text) return;
 
       btn.disabled = true;
-      btn.innerText = 'DALL-E 3 рисует...';
+      btn.innerText = 'Рисуем...';
       img.style.display = 'none';
 
-      try {
-        // Используем другой стабильный публичный прокси
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = 'https://api.openai.com/v1/images/generations';
+      // Кодируем текст для ссылки и подставляем в генератор
+      const encodedPrompt = encodeURIComponent(text);
+      // Добавляем случайное число в конце, чтобы картинка каждый раз обновлялась, а не бралась из кэша
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?n=${Date.now()}`;
 
-        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'dall-e-3',
-            prompt: text,
-            n: 1,
-            size: '1024x1024'
-          })
-        });
+      img.src = imageUrl;
+    }
 
-        const data = await response.json();
+    function imageLoaded() {
+      const btn = document.getElementById('btn');
+      const img = document.getElementById('resImg');
+      img.style.display = 'block';
+      btn.disabled = false;
+      btn.innerText = 'Сгенерировать';
+    }
 
-        if (response.ok && data.data && data.data[0].url) {
-          img.src = data.data[0].url;
-          img.style.display = 'block';
-        } else {
-          alert('Ошибка: ' + (data.error?.message || JSON.stringify(data)));
-        }
-      } catch (err) {
-        alert('Ошибка сети: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Сгенерировать';
-      }
+    function imageError() {
+      const btn = document.getElementById('btn');
+      alert('Не удалось загрузить картинку, попробуй еще раз');
+      btn.disabled = false;
+      btn.innerText = 'Сгенерировать';
     }
   </script>
 
 </body>
 </html>
-
