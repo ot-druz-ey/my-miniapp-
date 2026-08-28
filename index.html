@@ -87,7 +87,11 @@
       img.style.display = 'none';
 
       try {
-        const response = await fetch('https://api.openai.com/v1/images/generations', {
+        // Используем прокси-сервер для обхода блокировок CORS в браузере Telegram
+        const proxyUrl = 'https://corsproxy.io/?';
+        const targetUrl = 'https://api.openai.com/v1/images/generations';
+
+        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -107,7 +111,7 @@
           img.src = data.data[0].url;
           img.style.display = 'block';
         } else {
-          alert('Ошибка: ' + (data.error?.message || 'Не удалось сгенерировать'));
+          alert('Ошибка: ' + (data.error?.message || JSON.stringify(data)));
         }
       } catch (err) {
         alert('Ошибка сети: ' + err.message);
@@ -120,4 +124,3 @@
 
 </body>
 </html>
-
