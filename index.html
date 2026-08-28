@@ -72,8 +72,7 @@
   </div>
 
   <script>
-    // Вставь свой ключ вместо текста в кавычках (начинается на sk-...)
-    const OPENAI_API_KEY = "ТВОЙ_КЛЮЧ_ОБРАЗЕЦ";
+    const OPENAI_API_KEY = "Sk-proj-g6SAsznGFtUO0iKzahulde41hfaYzPd_WNYwQ-DLufLrt7vPJ09i3PgOCc3Avjit5k4PSZiz8vT3BlbkFJzjcBBtFqmo_Xt5D8LVNmAIZmno5wop9-6SxIP6-8GL7cUzlrcrE0ktadXENvSObeUBe4Mgbu0A";
 
     async function generate() {
       const input = document.getElementById('prompt');
@@ -82,11 +81,6 @@
       
       const text = input.value.trim();
       if (!text) return;
-
-      if (OPENAI_API_KEY.includes("ТВОЙ_КЛЮЧ")) {
-        alert("Сначала укажи свой API-ключ в коде index.html!");
-        return;
-      }
 
       btn.disabled = true;
       btn.innerText = 'DALL-E 3 рисует...';
