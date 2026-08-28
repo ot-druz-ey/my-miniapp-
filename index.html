@@ -87,8 +87,8 @@
       img.style.display = 'none';
 
       try {
-        // Используем прокси-сервер для обхода блокировок CORS в браузере Telegram
-        const proxyUrl = 'https://corsproxy.io/?';
+        // Используем другой стабильный публичный прокси
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
         const targetUrl = 'https://api.openai.com/v1/images/generations';
 
         const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
@@ -124,3 +124,4 @@
 
 </body>
 </html>
+
