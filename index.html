@@ -18,7 +18,7 @@
     h1 { font-size: 20px; margin-bottom: 8px; }
     p { color: #8e8e93; font-size: 14px; margin-bottom: 16px; text-align: center; }
     
-    input, select {
+    input {
       width: 90%;
       max-width: 320px;
       padding: 12px;
@@ -64,13 +64,7 @@
   <h1>AI Генератор Аватарок</h1>
   <p>Опиши картинку на английском</p>
 
-  <input type="text" id="prompt" placeholder="cool blue banana, HD, detailed...">
-  
-  <select id="modelSelect">
-    <option value="flux">Модель: Flux (Высокая детализация)</option>
-    <option value="turbo">Модель: Turbo (Быстрая генерация)</option>
-  </select>
-
+  <input type="text" id="prompt" placeholder="cool neon cat...">
   <button id="btn" onclick="generate()">Сгенерировать</button>
 
   <div class="result">
@@ -78,9 +72,10 @@
   </div>
 
   <script>
+    let timer = null;
+
     function generate() {
       const input = document.getElementById('prompt');
-      const modelSelect = document.getElementById('modelSelect');
       const btn = document.getElementById('btn');
       const img = document.getElementById('resImg');
       
@@ -88,26 +83,50 @@
       if (!text) return;
 
       btn.disabled = true;
-      btn.innerText = 'Рисую арт...';
+      btn.innerText = 'Рисую...';
+
+      if (timer) clearTimeout(timer);
 
       const seed = Math.floor(Math.random() * 9999999);
-      const model = modelSelect.value;
-      const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(text) + '?seed=' + seed + '&model=' + model + '&nologo=true&t=' + Date.now();
+      const encoded = encodeURIComponent(text);
+      
+      const fluxUrl = 'https://image.pollinations.ai/prompt/' + encoded + '?seed=' + seed + '&model=flux&nologo=true&t=' + Date.now();
+      const turboUrl = 'https://image.pollinations.ai/prompt/' + encoded + '?seed=' + seed + '&model=turbo&nologo=true&t=' + Date.now();
 
       const tempImg = new Image();
-      tempImg.src = url;
+      let hasLoaded = false;
+
+      // 1. Пробуем загрузить через Flux
+      tempImg.src = fluxUrl;
+
+      // 2. Если Flux не ответил за 5 секунд, принудительно качаем через быстрый Turbo
+      timer = setTimeout(() => {
+        if (!hasLoaded) {
+          btn.innerText = 'Ускоряю...';
+          tempImg.src = turboUrl;
+        }
+      }, 5000);
 
       tempImg.onload = () => {
-        img.src = url;
+        hasLoaded = true;
+        clearTimeout(timer);
+        img.src = tempImg.src;
         img.style.display = 'block';
         btn.disabled = false;
         btn.innerText = 'Сгенерировать';
       };
 
       tempImg.onerror = () => {
-        alert('Сервер временно не отвечает, попробуй выбрать модель Turbo или повторить через пару секунд!');
-        btn.disabled = false;
-        btn.innerText = 'Сгенерировать';
+        if (tempImg.src !== turboUrl) {
+          // Если Flux упал с ошибкой, сразу переключаем на Turbo
+          tempImg.src = turboUrl;
+        } else {
+          hasLoaded = true;
+          clearTimeout(timer);
+          alert('Сервер временно перегружен, нажми ещё раз!');
+          btn.disabled = false;
+          btn.innerText = 'Сгенерировать';
+        }
       };
     }
   </script>
