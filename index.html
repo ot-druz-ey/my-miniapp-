@@ -18,7 +18,7 @@
     h1 { font-size: 20px; margin-bottom: 8px; }
     p { color: #8e8e93; font-size: 14px; margin-bottom: 16px; text-align: center; }
     
-    input {
+    input, select {
       width: 90%;
       max-width: 320px;
       padding: 12px;
@@ -62,9 +62,17 @@
 <body>
 
   <h1>AI Генератор Аватарок</h1>
-  <p>Опиши картинку на английском</p>
+  <p>Опиши картинку на русском или английском</p>
 
-  <input type="text" id="prompt" placeholder="cool neon cat...">
+  <input type="text" id="prompt" placeholder="например: дубайский шоколад...">
+
+  <select id="styleSelect">
+    <option value="photo">📷 Реалистичное фото</option>
+    <option value="digital">🎨 Цифровой арт</option>
+    <option value="3d">🧊 3D Рендер</option>
+    <option value="anime">✨ Аниме / Манга</option>
+  </select>
+
   <button id="btn" onclick="generate()">Сгенерировать</button>
 
   <div class="result">
@@ -76,19 +84,37 @@
 
     function generate() {
       const input = document.getElementById('prompt');
+      const styleSelect = document.getElementById('styleSelect');
       const btn = document.getElementById('btn');
       const img = document.getElementById('resImg');
       
-      const text = input.value.trim();
+      let text = input.value.trim();
       if (!text) return;
 
       btn.disabled = true;
-      btn.innerText = 'Рисую...';
+      btn.innerText = 'Оптимизирую и рисую...';
 
       if (timer) clearTimeout(timer);
 
+      // Добавляем автоматическое улучшение промпта под выбранный стиль
+      let stylePrefix = '';
+      const style = styleSelect.value;
+
+      if (style === 'photo') {
+        stylePrefix = 'high quality professional studio photograph, detailed object closeup, 8k resolution, cinematic lighting, ultra realistic, ';
+      } else if (style === 'digital') {
+        stylePrefix = 'digital artwork, trending on artstation, highly detailed, vibrant colors, masterpiece, ';
+      } else if (style === '3d') {
+        stylePrefix = '3d render, octane render, smooth surfaces, volumetric light, highly detailed 3d object, ';
+      } else if (style === 'anime') {
+        stylePrefix = 'beautiful anime illustration, highly detailed, makoto shinkai style, vibrant lighting, ';
+      }
+
+      // Формируем прокачанный запрос
+      const enhancedPrompt = stylePrefix + text + ', clean background, masterpiece, best quality';
+
       const seed = Math.floor(Math.random() * 9999999);
-      const encoded = encodeURIComponent(text);
+      const encoded = encodeURIComponent(enhancedPrompt);
       
       const fluxUrl = 'https://image.pollinations.ai/prompt/' + encoded + '?seed=' + seed + '&model=flux&nologo=true&t=' + Date.now();
       const turboUrl = 'https://image.pollinations.ai/prompt/' + encoded + '?seed=' + seed + '&model=turbo&nologo=true&t=' + Date.now();
@@ -96,16 +122,15 @@
       const tempImg = new Image();
       let hasLoaded = false;
 
-      // 1. Пробуем загрузить через Flux
       tempImg.src = fluxUrl;
 
-      // 2. Если Flux не ответил за 5 секунд, принудительно качаем через быстрый Turbo
+      // Резервный таймер на 6 секунд
       timer = setTimeout(() => {
         if (!hasLoaded) {
           btn.innerText = 'Ускоряю...';
           tempImg.src = turboUrl;
         }
-      }, 5000);
+      }, 6000);
 
       tempImg.onload = () => {
         hasLoaded = true;
@@ -118,7 +143,6 @@
 
       tempImg.onerror = () => {
         if (tempImg.src !== turboUrl) {
-          // Если Flux упал с ошибкой, сразу переключаем на Turbo
           tempImg.src = turboUrl;
         } else {
           hasLoaded = true;
