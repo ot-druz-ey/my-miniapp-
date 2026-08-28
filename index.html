@@ -7,30 +7,42 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = () => {
-    if (!prompt) return;
+    if (!prompt.trim()) return;
     setLoading(true);
-    const cleanPrompt = encodeURIComponent(prompt);
-    const seed = Math.floor(Math.random() * 99999);
-    setImageUrl(`https://image.pollinations.ai/prompt/${cleanPrompt}?seed=${seed}`);
+    
+    const seed = Math.floor(
+      Math.random() * 999999
+    );
+    const text = encodeURIComponent(
+      prompt
+    );
+    const domain = 'https://image.pollinations.ai/prompt/';
+    const fullUrl = domain + text + '?seed=' + seed;
+    
+    setImageUrl(fullUrl);
   };
 
   return (
     <div className="container">
       <h1>AI Генератор</h1>
+      <p className="subtitle">Введи запрос на английском</p>
+
       <input
         type="text"
-        placeholder="Опиши картинку..."
+        placeholder="cool cat..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
       />
+
       <button onClick={handleGenerate}>
-        {loading ? 'Загрузка...' : 'Сгенерировать'}
+        {loading ? 'Генерирую...' : 'Сгенерировать'}
       </button>
+
       {imageUrl && (
         <div className="result">
-          <img 
-            src={imageUrl} 
-            alt="Result" 
+          <img
+            src={imageUrl}
+            alt="Result"
             onLoad={() => setLoading(false)}
             onError={() => {
               setLoading(false);
