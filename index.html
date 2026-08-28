@@ -7,51 +7,36 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = () => {
-    if (!prompt.trim()) return;
-    
+    if (!prompt) return;
     setLoading(true);
-    setImageUrl('');
-
-    // Добавляем случайное число, чтобы картинка обновлялась всегда
-    const randomSeed = Math.floor(Math.random() * 1000000);
-    const encodedPrompt = encodeURIComponent(prompt.trim());
-    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${randomSeed}&nologo=true`;
-
-    // Создаем предварительную загрузку картинки
-    const img = new Image();
-    img.src = url;
-    
-    img.onload = () => {
-      setImageUrl(url);
-      setLoading(false);
-    };
-
-    img.onerror = () => {
-      alert('Сервер генерации временно перегружен. Попробуй еще раз через пару секунд!');
-      setLoading(false);
-    };
+    const cleanPrompt = encodeURIComponent(prompt);
+    const seed = Math.floor(Math.random() * 99999);
+    setImageUrl(`https://image.pollinations.ai/prompt/${cleanPrompt}?seed=${seed}`);
   };
 
   return (
     <div className="container">
-      <h1>AI Генератор Аватарок</h1>
-      <p className="subtitle">Опиши картинку на английском (например: cool neon cat)</p>
-      
+      <h1>AI Генератор</h1>
       <input
         type="text"
-        placeholder="Введите описание..."
+        placeholder="Опиши картинку..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        disabled={loading}
       />
-      
-      <button onClick={handleGenerate} disabled={loading || !prompt.trim()}>
-        {loading ? 'Генерирую...' : 'Сгенерировать'}
+      <button onClick={handleGenerate}>
+        {loading ? 'Загрузка...' : 'Сгенерировать'}
       </button>
-
       {imageUrl && (
         <div className="result">
-          <img src={imageUrl} alt="Generated result" />
+          <img 
+            src={imageUrl} 
+            alt="Result" 
+            onLoad={() => setLoading(false)}
+            onError={() => {
+              setLoading(false);
+              alert('Ошибка загрузки');
+            }}
+          />
         </div>
       )}
     </div>
