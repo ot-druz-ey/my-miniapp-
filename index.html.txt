@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Генератор Аваторок</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1c1c1e;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h2 { margin-bottom: 10px; }
+    input {
+      width: 90%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      font-size: 16px;
+    }
+    button {
+      width: 95%;
+      padding: 14px;
+      background-color: #0088cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { background-color: #555; }
+    #resultContainer {
+      margin-top: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      display: none;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .loader {
+      display: none;
+      color: #0088cc;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>AI Генератор Аваторок</h2>
+  <p style="font-size: 14px; color: #aaa; text-align: center;">Опиши картинку на английском (например: cool neon cat)</p>
+
+  <input type="text" id="promptInput" placeholder="Введите описание...">
+  <button id="genBtn" onclick="generateImage()">Сгенерировать</button>
+
+  <div id="resultContainer">
+    <div id="loader" class="loader">Рисуем картинку... (~5 сек)</div>
+    <img id="outputImg" alt="Сгенерированное изображение">
+  </div>
+
+  <script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    function generateImage() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      if (!prompt) {
+        alert("Пожалуйста, введите описание!");
+        return;
+      }
+
+      const btn = document.getElementById('genBtn');
+      const loader = document.getElementById('loader');
+      const img = document.getElementById('outputImg');
+
+      btn.disabled = true;
+      loader.style.display = 'block';
+      img.style.display = 'none';
+
+      // Используем бесплатный нейросетевой генератор Pollinations.ai
+      const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Math.floor(Math.random() * 1000)}`;
+
+      img.src = imageUrl;
+      img.onload = () => {
+        loader.style.display = 'none';
+        img.style.display = 'block';
+        btn.disabled = false;
+      };
+      img.onerror = () => {
+        loader.style.display = 'none';
+        alert("Ошибка генерации, попробуйте еще раз.");
+        btn.disabled = false;
+      };
+    }
+  </script>
+</body>
+</html>
