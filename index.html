@@ -82,7 +82,7 @@
 
   <script>
     function generate() {
-      const text = document.getElementById('prompt').value.trim();
+      let text = document.getElementById('prompt').value.trim();
       if (!text) {
         alert('Введи текст запроса!');
         return;
@@ -95,7 +95,14 @@
       status.innerText = 'Генерация началась...';
       img.style.display = 'none';
 
-      // Передаем то, что написал пользователь, без странных шаблонов, но натравливаем модель flux
+      // Авто-разворот для флагов, чтобы нейросеть не путалась
+      const lower = text.toLowerCase();
+      if (lower.includes('flag russia') || lower.includes('флаг россии')) {
+        text = 'a clear realistic flag of Russia with white, blue, and red horizontal stripes fluttering on a flagpole';
+      } else if (lower.includes('flag germany') || lower.includes('флаг германии')) {
+        text = 'a clear realistic flag of Germany with black, red, and gold horizontal stripes fluttering on a flagpole';
+      }
+
       const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nologo=true&t=${Date.now()}`;
       
       img.src = url;
