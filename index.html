@@ -3,144 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Studio</title>
+  <title>AI Generator</title>
   <style>
-    :root {
-      --bg-color: #0f0f11;
-      --card-bg: #1c1c1e;
-      --accent: #0a84ff;
-      --text-main: #ffffff;
-      --text-secondary: #8e8e93;
-      --border: #3a3a3c;
-    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
+      background-color: #1c1c1e;
+      color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
       margin: 0;
-      box-sizing: border-box;
     }
-    .container {
-      width: 100%;
-      max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; text-align: center; }
-    p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; text-align: center; }
+    h1 { font-size: 20px; margin-bottom: 6px; }
+    p { color: #8e8e93; font-size: 14px; margin-bottom: 20px; text-align: center; }
     textarea {
-      width: 100%;
-      height: 90px;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background-color: var(--card-bg);
-      color: var(--text-main);
+      width: 90%;
+      max-width: 320px;
+      height: 80px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #3a3a3c;
+      background-color: #2c2c2e;
+      color: white;
       font-size: 16px;
       resize: none;
-      box-sizing: border-box;
       outline: none;
       margin-bottom: 12px;
     }
     button {
-      width: 100%;
+      width: 90%;
+      max-width: 320px;
       padding: 14px;
-      border-radius: 14px;
+      border-radius: 12px;
       border: none;
-      background-color: var(--accent);
+      background-color: #007aff;
       color: white;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
     }
     button:disabled { opacity: 0.5; }
-    .result-card {
-      margin-top: 24px;
-      width: 100%;
-      background-color: var(--card-bg);
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      display: none;
+    .result {
+      margin-top: 20px;
+      width: 90%;
+      max-width: 320px;
     }
     img {
       width: 100%;
-      height: auto;
-      display: block;
+      border-radius: 12px;
+      display: none;
     }
     .status {
-      color: var(--text-secondary);
+      color: #8e8e93;
       font-size: 14px;
       text-align: center;
-      padding: 20px;
+      margin-top: 10px;
       display: none;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>AI Studio</h1>
-    <p>Фотореалистичная генерация</p>
+  <h1>AI Generator</h1>
+  <p>Реалистичные картинки в один клик</p>
 
-    <textarea id="prompt" placeholder="Опиши кадр..."></textarea>
-    <button id="btn" onclick="generateImage()">Сгенерировать шедевр</button>
+  <textarea id="prompt" placeholder="Опиши что нарисовать..."></textarea>
+  <button id="btn" onclick="go()">Сгенерировать</button>
 
-    <div class="result-card" id="resultCard">
-      <div id="status" class="status">Нейросеть рисует... Подожди пару секунд.</div>
-      <img id="resImg" alt="Generated Image" onload="imageLoaded()" onerror="imageError()">
-    </div>
+  <div class="result">
+    <div id="status" class="status">Генерируем картинку...</div>
+    <img id="resImg" alt="Result">
   </div>
 
   <script>
-    function generateImage() {
-      const input = document.getElementById('prompt');
+    function go() {
+      const text = document.getElementById('prompt').value.trim();
+      if (!text) return;
+
       const btn = document.getElementById('btn');
-      const card = document.getElementById('resultCard');
       const img = document.getElementById('resImg');
       const status = document.getElementById('status');
 
-      const text = input.value.trim();
-      if (!text) return;
-
       btn.disabled = true;
-      btn.innerText = 'Генерация...';
-      card.style.display = 'block';
+      btn.innerText = 'Создаем...';
       img.style.display = 'none';
       status.style.display = 'block';
 
-      // Добавляем строгие теги реализма
-      const enhancedPrompt = `${text}, photorealistic, highly detailed, 8k resolution, cinematic lighting, sharp focus`;
+      // Добавляем теги для крутого качества
+      const query = encodeURIComponent(text + ", photorealistic, highly detailed, 8k");
       
-      const imageUrl = `https://pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
+      // Используем стабильный эндпоинт
+      img.src = `https://image.pollinations.ai/prompt/${query}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
 
-      // Сразу грузим в img без лишних проверок
-      img.src = imageUrl;
-    }
+      img.onload = function() {
+        status.style.display = 'none';
+        img.style.display = 'block';
+        btn.disabled = false;
+        btn.innerText = 'Сгенерировать';
+      };
 
-    function imageLoaded() {
-      const btn = document.getElementById('btn');
-      const img = document.getElementById('resImg');
-      const status = document.getElementById('status');
-      
-      status.style.display = 'none';
-      img.style.display = 'block';
-      btn.disabled = false;
-      btn.innerText = 'Сгенерировать шедевр';
-    }
-
-    function imageError() {
-      const btn = document.getElementById('btn');
-      const status = document.getElementById('status');
-      
-      status.innerText = 'Не удалось загрузить. Нажми еще раз.';
-      btn.disabled = false;
-      btn.innerText = 'Сгенерировать шедевр';
+      img.onerror = function() {
+        status.style.display = 'none';
+        btn.disabled = false;
+        btn.innerText = 'Сгенерировать';
+        alert('Сервер перегружен, нажми еще раз!');
+      };
     }
   </script>
 
