@@ -72,7 +72,7 @@
   <h1>Генератор Картин</h1>
   <p>Опиши кадр, и нажми кнопку</p>
 
-  <textarea id="prompt" placeholder="например: кристально чистая вода..."></textarea>
+  <textarea id="prompt" placeholder="например: flag Russia..."></textarea>
   <button onclick="generate()">Сгенерировать</button>
 
   <div class="result">
@@ -95,8 +95,15 @@
       status.innerText = 'Генерация началась...';
       img.style.display = 'none';
 
-      // Прямая ссылка с уникальным таймстампом
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(text + ", photorealistic, 8k")}?width=1024&height=1024&nologo=true&t=${Date.now()}`;
+      // Умный промпт: если просят флаг или символ, заставляем нейросеть делать четкий акцент на объекте
+      let smartPrompt = text;
+      if (text.toLowerCase().includes('flag') || text.toLowerCase().includes('флаг')) {
+        smartPrompt = `clear official ${text}, sharp geometry, fluttering fabric, isolated on clean background or realistic setting`;
+      } else {
+        smartPrompt = `${text}, high quality, crisp details, sharp focus`;
+      }
+
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(smartPrompt)}?width=1024&height=1024&nologo=true&t=${Date.now()}`;
       
       img.src = url;
       
