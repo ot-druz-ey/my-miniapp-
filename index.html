@@ -46,7 +46,6 @@
       font-weight: bold;
       cursor: pointer;
     }
-    button:disabled { opacity: 0.5; }
 
     .result {
       margin-top: 20px;
@@ -59,62 +58,55 @@
     img {
       width: 100%;
       border-radius: 12px;
-      display: none;
+      margin-top: 10px;
     }
     .status {
       color: #8e8e93;
       font-size: 14px;
       margin-top: 10px;
-      display: none;
     }
   </style>
 </head>
 <body>
 
   <h1>Генератор Картин</h1>
-  <p>Опиши кадр, и нейросеть нарисует</p>
+  <p>Опиши кадр, и нажми кнопку</p>
 
-  <textarea id="prompt" placeholder="например: кристально чистая вода в стеклянной бутылке..."></textarea>
-  <button id="btn" onclick="generate()">Сгенерировать</button>
+  <textarea id="prompt" placeholder="например: кристально чистая вода..."></textarea>
+  <button onclick="generate()">Сгенерировать</button>
 
   <div class="result">
-    <div id="status" class="status">Нейросеть рисует...</div>
-    <img id="resImg" alt="Result">
+    <div id="status" class="status" style="display: none;">Загрузка...</div>
+    <img id="resImg" alt="" style="display: none;">
   </div>
 
   <script>
     function generate() {
-      const input = document.getElementById('prompt');
-      const btn = document.getElementById('btn');
+      const text = document.getElementById('prompt').value.trim();
+      if (!text) {
+        alert('Введи текст запроса!');
+        return;
+      }
+
       const img = document.getElementById('resImg');
       const status = document.getElementById('status');
       
-      const text = input.value.trim();
-      if (!text) return;
-
-      btn.disabled = true;
-      btn.innerText = 'Рисуем...';
-      img.style.display = 'none';
       status.style.display = 'block';
+      status.innerText = 'Генерация началась...';
+      img.style.display = 'none';
 
-      // Используем стабильный прямой путь без лишних падений
-      const enhancedPrompt = `${text}, photorealistic, highly detailed, 8k`;
-      const imageUrl = `https://pollinations.ai/p/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-
-      img.src = imageUrl;
-
+      // Прямая ссылка с уникальным таймстампом
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(text + ", photorealistic, 8k")}?width=1024&height=1024&nologo=true&t=${Date.now()}`;
+      
+      img.src = url;
+      
       img.onload = function() {
         status.style.display = 'none';
         img.style.display = 'block';
-        btn.disabled = false;
-        btn.innerText = 'Сгенерировать';
       };
 
       img.onerror = function() {
-        status.style.display = 'none';
-        // Если вдруг моргнуло, даем второй шанс без алерта, просто возвращаем кнопку
-        btn.disabled = false;
-        btn.innerText = 'Сгенерировать';
+        status.innerText = 'Ошибка загрузки, попробуй еще раз';
       };
     }
   </script>
