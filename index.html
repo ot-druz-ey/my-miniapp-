@@ -64,25 +64,24 @@
       color: #8e8e93;
       font-size: 14px;
       margin-top: 10px;
-      display: none;
     }
   </style>
 </head>
 <body>
 
-  <h1>Генератор Картин</h1>
-  <p>Опиши картинку, и нейросеть нарисует её</p>
+  <h1>Генератор Картинок</h1>
+  <p>Пиши запрос (лучше на английском)</p>
 
-  <input type="text" id="prompt" placeholder="например: белая спортивная машина..." onkeydown="if(event.key==='Enter') generate()">
+  <input type="text" id="prompt" placeholder="например: white sports car..." onkeydown="if(event.key==='Enter') generate()">
   <button id="btn" onclick="generate()">Сгенерировать</button>
 
   <div class="result">
-    <div id="status" class="status">Переводим и рисуем...</div>
+    <div id="status" class="status" style="display: none;">Генерируем...</div>
     <img id="resImg" alt="Result" onload="imageLoaded()" onerror="imageError()">
   </div>
 
   <script>
-    async function generate() {
+    function generate() {
       const input = document.getElementById('prompt');
       const btn = document.getElementById('btn');
       const img = document.getElementById('resImg');
@@ -92,28 +91,12 @@
       if (!text) return;
 
       btn.disabled = true;
+      btn.innerText = 'Рисуем...';
       img.style.display = 'none';
       status.style.display = 'block';
-      status.innerText = 'Переводим запрос...';
 
-      let finalPrompt = text;
-
-      try {
-        // Быстро переводим через бесплатный публичный переводчик, чтобы нейросеть точно поняла суть
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
-        const data = await res.json();
-        if (data && data[0] && data[0][0] && data[0][0][0]) {
-          finalPrompt = data[0].map(item => item[0]).join('');
-        }
-      } catch (e) {
-        // Если переводчик не ответил, шлем оригинал
-        finalPrompt = text;
-      }
-
-      status.innerText = 'Нейросеть рисует...';
-
-      // Собираем ссылку на генерацию картинки
-      const encodedPrompt = encodeURIComponent(finalPrompt);
+      // Прямая генерация без лишних запросов — работает моментально
+      const encodedPrompt = encodeURIComponent(text);
       const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?n=${Date.now()}`;
 
       img.src = imageUrl;
@@ -135,7 +118,7 @@
       const status = document.getElementById('status');
       
       status.style.display = 'none';
-      alert('Не удалось загрузить картинку, попробуй еще раз');
+      alert('Ошибка загрузки, попробуй еще раз');
       btn.disabled = false;
       btn.innerText = 'Сгенерировать';
     }
