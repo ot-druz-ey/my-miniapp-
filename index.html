@@ -3,20 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Image Studio</title>
+  <title>AI Studio</title>
   <style>
     :root {
       --bg-color: #0f0f11;
       --card-bg: #1c1c1e;
       --accent: #0a84ff;
-      --accent-hover: #0070e0;
       --text-main: #ffffff;
       --text-secondary: #8e8e93;
       --border: #3a3a3c;
     }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-main);
       display: flex;
@@ -24,10 +22,8 @@
       align-items: center;
       padding: 20px;
       margin: 0;
-      min-height: 100vh;
       box-sizing: border-box;
     }
-
     .container {
       width: 100%;
       max-width: 400px;
@@ -35,28 +31,8 @@
       flex-direction: column;
       align-items: center;
     }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      text-align: center;
-      letter-spacing: -0.5px;
-    }
-
-    p {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .input-group {
-      width: 100%;
-      position: relative;
-      margin-bottom: 12px;
-    }
-
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; text-align: center; }
+    p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; text-align: center; }
     textarea {
       width: 100%;
       height: 90px;
@@ -66,17 +42,11 @@
       background-color: var(--card-bg);
       color: var(--text-main);
       font-size: 16px;
-      font-family: inherit;
       resize: none;
       box-sizing: border-box;
       outline: none;
-      transition: border-color 0.2s;
+      margin-bottom: 12px;
     }
-
-    textarea:focus {
-      border-color: var(--accent);
-    }
-
     button {
       width: 100%;
       padding: 14px;
@@ -87,18 +57,8 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s, opacity 0.2s;
     }
-
-    button:active {
-      background-color: var(--accent-hover);
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
+    button:disabled { opacity: 0.5; }
     .result-card {
       margin-top: 24px;
       width: 100%;
@@ -107,46 +67,18 @@
       border: 1px solid var(--border);
       overflow: hidden;
       display: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-
-    .image-wrapper {
-      width: 100%;
-      aspect-ratio: 1/1;
-      position: relative;
-      background-color: #141416;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
+      height: auto;
+      display: block;
     }
-
-    .loader {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+    .status {
       color: var(--text-secondary);
       font-size: 14px;
-    }
-
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      text-align: center;
+      padding: 20px;
+      display: none;
     }
   </style>
 </head>
@@ -154,70 +86,61 @@
 
   <div class="container">
     <h1>AI Studio</h1>
-    <p>Создавай фотореалистичные изображения без мультяшности</p>
+    <p>Фотореалистичная генерация</p>
 
-    <div class="input-group">
-      <textarea id="prompt" placeholder="Опиши кадр (например: роскошный дубайский шоколад с фисташками...)"></textarea>
-    </div>
-    
+    <textarea id="prompt" placeholder="Опиши кадр..."></textarea>
     <button id="btn" onclick="generateImage()">Сгенерировать шедевр</button>
 
     <div class="result-card" id="resultCard">
-      <div class="image-wrapper">
-        <div class="loader" id="loader">
-          <div class="spinner"></div>
-          <span id="loadingText">Создаем фото...</span>
-        </div>
-        <img id="resImg" alt="Generated Image" onload="imageLoaded()" onerror="imageError()">
-      </div>
+      <div id="status" class="status">Нейросеть рисует... Подожди пару секунд.</div>
+      <img id="resImg" alt="Generated Image" onload="imageLoaded()" onerror="imageError()">
     </div>
   </div>
 
   <script>
-    async function generateImage() {
+    function generateImage() {
       const input = document.getElementById('prompt');
       const btn = document.getElementById('btn');
       const card = document.getElementById('resultCard');
       const img = document.getElementById('resImg');
-      const loader = document.getElementById('loader');
-      const loadingText = document.getElementById('loadingText');
+      const status = document.getElementById('status');
 
       const text = input.value.trim();
       if (!text) return;
 
-      // Блокируем интерфейс и показываем карточку результата с загрузкой
       btn.disabled = true;
       btn.innerText = 'Генерация...';
       card.style.display = 'block';
       img.style.display = 'none';
-      loader.style.display = 'flex';
-      loadingText.innerText = 'Нейросеть рисует детали...';
+      status.style.display = 'block';
 
-      // Профессиональный промпт-инжиниринг: принудительно убираем мультяшность, добавляем 8k и фотореализм
-      const enhancedPrompt = `${text}, photorealistic, highly detailed, 8k resolution, cinematic lighting, sharp focus, professional photography, masterpiece`;
+      // Добавляем строгие теги реализма
+      const enhancedPrompt = `${text}, photorealistic, highly detailed, 8k resolution, cinematic lighting, sharp focus`;
       
-      // Рандомный сид и таймстамп гарантируют, что картинка всегда будет уникальной и не застрянет в кэше
-      const seed = Math.floor(Math.random() * 1000000);
-      const imageUrl = `https://pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&seed=${seed}&nologo=true`;
+      const imageUrl = `https://pollinations.ai/prompt/${encodeURIComponent(enhancedPrompt)}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000000)}&nologo=true`;
 
-      // Предзагрузка изображения через объект Image, чтобы отловить точную готовность
-      const imageLoader = new Image();
-      imageLoader.src = imageUrl;
+      // Сразу грузим в img без лишних проверок
+      img.src = imageUrl;
+    }
 
-      imageLoader.onload = function() {
-        img.src = imageUrl;
-        img.style.display = 'block';
-        loader.style.display = 'none';
-        btn.disabled = false;
-        btn.innerText = 'Сгенерировать шедевр';
-      };
+    function imageLoaded() {
+      const btn = document.getElementById('btn');
+      const img = document.getElementById('resImg');
+      const status = document.getElementById('status');
+      
+      status.style.display = 'none';
+      img.style.display = 'block';
+      btn.disabled = false;
+      btn.innerText = 'Сгенерировать шедевр';
+    }
 
-      imageLoader.onerror = function() {
-        loader.style.display = 'none';
-        btn.disabled = false;
-        btn.innerText = 'Сгенерировать шедевр';
-        alert('Не удалось загрузить изображение. Попробуйте еще раз.');
-      };
+    function imageError() {
+      const btn = document.getElementById('btn');
+      const status = document.getElementById('status');
+      
+      status.innerText = 'Не удалось загрузить. Нажми еще раз.';
+      btn.disabled = false;
+      btn.innerText = 'Сгенерировать шедевр';
     }
   </script>
 
